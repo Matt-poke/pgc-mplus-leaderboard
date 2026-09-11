@@ -52,7 +52,29 @@ export async function graphql(query, variables = {}) {
   return json.data;
 }
 
-// Récupère la liste des donjons (encounters) de la zone M+ en cours.
+let cachedClassNames = null;
+
+// Le classID renvoyé par l'API pour un personnage utilise la numérotation
+// interne de Warcraft Logs, pas celle de Blizzard — on la résout donc
+// dynamiquement plutôt que de la deviner.
+export async function getClassNameById(classID) {
+  if (!cachedClassNames) {
+    const data = await graphql(`
+      query {
+        gameData {
+          classes {
+            id
+            name
+          }
+        }
+      }
+    `);
+    cachedClassNames = new Map(
+      (data?.gameData?.classes || []).map((c) => [c.id, c.name])
+    );
+  }
+  return cachedClassNames.get(classID) || null;
+}
 export async function getSeasonEncounters(zoneId) {
   const data = await graphql(
     `
