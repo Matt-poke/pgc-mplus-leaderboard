@@ -1,28 +1,10 @@
-import { graphql } from "./_wcl.js";
-
 export default async function handler(req, res) {
-  const { server, region } = req.query;
+  const { name, server, region } = req.query;
   try {
-    const data = await graphql(
-      `
-        query($server: String!, $region: String!) {
-          worldData {
-            encounter(id: 12993) {
-              characterRankings(
-                className: "Mage"
-                specName: "Arcane"
-                metric: playerscore
-                serverSlug: $server
-                serverRegion: $region
-                includeCombatantInfo: true
-              )
-            }
-          }
-        }
-      `,
-      { server, region }
-    );
-    res.status(200).json(data);
+    const url = `https://raider.io/api/v1/characters/profile?region=${region.toLowerCase()}&realm=${server}&name=${name}&fields=gear,talents,mythic_plus_scores_by_season`;
+    const r = await fetch(url);
+    const text = await r.text();
+    res.status(200).json({ status: r.status, body: text });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
