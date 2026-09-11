@@ -53,6 +53,7 @@ export const SPECS = [
 
   { slug: "demonhunter-havoc", className: "DemonHunter", specName: "Havoc" },
   { slug: "demonhunter-vengeance", className: "DemonHunter", specName: "Vengeance" },
+  { slug: "demonhunter-devourer", className: "DemonHunter", specName: "Devourer" },
 
   { slug: "evoker-devastation", className: "Evoker", specName: "Devastation" },
   { slug: "evoker-preservation", className: "Evoker", specName: "Preservation" },

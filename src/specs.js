@@ -50,6 +50,7 @@ export const SPECS = [
 
   { slug: "demonhunter-havoc", className: "DemonHunter", label: "Dévastation" },
   { slug: "demonhunter-vengeance", className: "DemonHunter", label: "Vengeance" },
+  { slug: "demonhunter-devourer", className: "DemonHunter", label: "Dévoreur" },
 
   { slug: "evoker-devastation", className: "Evoker", label: "Dévastation" },
   { slug: "evoker-preservation", className: "Evoker", label: "Préservation" },
