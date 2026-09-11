@@ -231,3 +231,59 @@ body {
   font-size: 1.4rem;
   text-align: left;
 }
+
+.section-subtitle {
+  font-family: "Fraunces", serif;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 1.75rem 0 0.75rem;
+  color: var(--text);
+}
+
+.gear-row {
+  display: grid;
+  grid-template-columns: 7rem 1fr 1fr;
+  gap: 1rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.gear-row:first-child {
+  border-top: none;
+}
+
+.gear-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+
+.talent-diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.talent-diff ul {
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.talent-diff li {
+  margin-bottom: 0.2rem;
+}
+
+@media (max-width: 560px) {
+  .gear-row {
+    grid-template-columns: 5rem 1fr 1fr;
+    font-size: 0.75rem;
+  }
+  .talent-diff {
+    grid-template-columns: 1fr;
+  }
+}

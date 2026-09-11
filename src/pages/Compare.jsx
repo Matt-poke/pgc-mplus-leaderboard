@@ -2,6 +2,35 @@ import { useState } from "react";
 import { CLASSES } from "../classes.js";
 import { SPECS } from "../specs.js";
 
+const SLOT_LABELS = {
+  head: "Tête",
+  neck: "Cou",
+  shoulder: "Épaules",
+  back: "Dos",
+  chest: "Torse",
+  waist: "Taille",
+  wrist: "Poignets",
+  hands: "Mains",
+  legs: "Jambes",
+  feet: "Pieds",
+  finger1: "Anneau 1",
+  finger2: "Anneau 2",
+  trinket1: "Babiole 1",
+  trinket2: "Babiole 2",
+  mainhand: "Main principale",
+  offhand: "Main secondaire",
+};
+
+function realmSlug(displayName) {
+  if (!displayName) return "";
+  return displayName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // accents
+    .replace(/'/g, "")
+    .replace(/\s+/g, "-");
+}
+
 function specSlug(className, spec) {
   return `${className.toLowerCase()}-${spec.toLowerCase().replace(/\s+/g, "")}`;
 }
@@ -12,6 +41,15 @@ export default function Compare() {
   const [error, setError] = useState(null);
   const [character, setCharacter] = useState(null);
   const [leader, setLeader] = useState(null);
+  const [myGear, setMyGear] = useState(null);
+  const [leaderGear, setLeaderGear] = useState(null);
+
+  async function fetchGear(name, server, region) {
+    const params = new URLSearchParams({ name, server, region });
+    const res = await fetch(`/api/gear?${params}`);
+    if (!res.ok) return null;
+    return res.json();
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -19,25 +57,34 @@ export default function Compare() {
     setError(null);
     setCharacter(null);
     setLeader(null);
+    setMyGear(null);
+    setLeaderGear(null);
 
     try {
       const params = new URLSearchParams(form);
       const res = await fetch(`/api/character?${params}`);
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Erreur inconnue");
-      }
-
+      if (!res.ok) throw new Error(data.error || "Erreur inconnue");
       setCharacter(data);
 
+      const myGearPromise = fetchGear(form.name, form.server, form.region);
+
+      let leaderRow = null;
       if (data.mainSpec) {
         const slug = specSlug(data.className, data.mainSpec);
         const rankingsRes = await fetch("/api/rankings");
         const rankings = await rankingsRes.json();
-        const row = rankings.find((r) => r.spec_slug === slug);
-        setLeader(row?.data || null);
+        leaderRow = rankings.find((r) => r.spec_slug === slug)?.data || null;
+        setLeader(leaderRow);
       }
+
+      const leaderGearPromise = leaderRow
+        ? fetchGear(leaderRow.name, realmSlug(leaderRow.server), leaderRow.region)
+        : Promise.resolve(null);
+
+      const [myG, leaderG] = await Promise.all([myGearPromise, leaderGearPromise]);
+      setMyGear(myG);
+      setLeaderGear(leaderG);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,6 +96,15 @@ export default function Compare() {
   const specInfo = character
     ? SPECS.find((s) => s.className === character.className && specSlug(character.className, character.mainSpec) === s.slug)
     : null;
+
+  const allSlots = myGear || leaderGear
+    ? [...new Set([...(myGear?.gearSlots || []), ...(leaderGear?.gearSlots || [])].map((g) => g.slot))]
+    : [];
+
+  const myTalents = new Set(myGear?.talentNames || []);
+  const leaderTalents = new Set(leaderGear?.talentNames || []);
+  const onlyMine = (myGear?.talentNames || []).filter((t) => !leaderTalents.has(t));
+  const onlyLeader = (leaderGear?.talentNames || []).filter((t) => !myTalents.has(t));
 
   return (
     <>
@@ -114,6 +170,7 @@ export default function Compare() {
             </div>
           </div>
 
+          <h3 className="section-subtitle">Score par donjon</h3>
           <div className="spec-list">
             {character.dungeons.map((d) => (
               <div className="spec-row" key={d.dungeon}>
@@ -124,6 +181,56 @@ export default function Compare() {
               </div>
             ))}
           </div>
+
+          {(myGear || leaderGear) && (
+            <>
+              <h3 className="section-subtitle">
+                Stuff — toi ({myGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl) vs n°1 (
+                {leaderGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl)
+              </h3>
+              <div className="spec-list">
+                {allSlots.map((slot) => {
+                  const mine = myGear?.gearSlots.find((g) => g.slot === slot);
+                  const theirs = leaderGear?.gearSlots.find((g) => g.slot === slot);
+                  return (
+                    <div className="gear-row" key={slot}>
+                      <span className="spec-label">{SLOT_LABELS[slot] || slot}</span>
+                      <span className="gear-item">{mine ? `${mine.name} (${mine.itemLevel})` : "—"}</span>
+                      <span className="gear-item">{theirs ? `${theirs.name} (${theirs.itemLevel})` : "—"}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <h3 className="section-subtitle">Différences de talents</h3>
+              <div className="talent-diff">
+                <div>
+                  <p className="compare-total-label">Toi seul(e)</p>
+                  {onlyMine.length === 0 ? (
+                    <p className="leader-empty">Aucune différence</p>
+                  ) : (
+                    <ul>
+                      {onlyMine.map((t) => (
+                        <li key={t}>{t}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div>
+                  <p className="compare-total-label">N°1 seul(e)</p>
+                  {onlyLeader.length === 0 ? (
+                    <p className="leader-empty">Aucune différence</p>
+                  ) : (
+                    <ul>
+                      {onlyLeader.map((t) => (
+                        <li key={t}>{t}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </section>
       )}
     </>
