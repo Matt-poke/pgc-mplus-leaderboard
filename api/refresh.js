@@ -24,11 +24,15 @@ export default async function handler(req, res) {
     const zoneId = Number(process.env.WCL_ZONE_ID || 55);
 
     // 1. Où en était-on ? (curseur stocké comme une ligne spéciale dans la table)
-    const { data: cursorRow } = await supabase
+    const { data: cursorRow, error: cursorReadError } = await supabase
       .from("spec_rankings")
       .select("data")
       .eq("spec_slug", "_cursor")
       .maybeSingle();
+
+    if (cursorReadError) {
+      throw new Error(`Échec lecture du curseur : ${cursorReadError.message}`);
+    }
 
     const startIndex = cursorRow?.data?.index || 0;
 
@@ -48,7 +52,7 @@ export default async function handler(req, res) {
     for (const spec of batch) {
       const leader = await computeSpecLeader(spec, encounters);
 
-      await supabase.from("spec_rankings").upsert({
+      const { error: upsertError } = await supabase.from("spec_rankings").upsert({
         spec_slug: spec.slug,
         class_name: spec.className,
         spec_name: spec.specName,
@@ -56,18 +60,26 @@ export default async function handler(req, res) {
         updated_at: new Date().toISOString(),
       });
 
+      if (upsertError) {
+        throw new Error(`Échec écriture Supabase pour ${spec.slug} : ${upsertError.message}`);
+      }
+
       results.push({ spec: spec.slug, leader: leader?.name || "(aucun trouvé)" });
     }
 
     // 5. On avance le curseur pour le prochain appel.
     const nextIndex = (startIndex + BATCH_SIZE) % SPECS.length;
-    await supabase.from("spec_rankings").upsert({
+    const { error: cursorError } = await supabase.from("spec_rankings").upsert({
       spec_slug: "_cursor",
       class_name: "_meta",
       spec_name: "_meta",
       data: { index: nextIndex },
       updated_at: new Date().toISOString(),
     });
+
+    if (cursorError) {
+      throw new Error(`Échec écriture du curseur : ${cursorError.message}`);
+    }
 
     res.status(200).json({ ok: true, processed: results, nextIndex });
   } catch (err) {
