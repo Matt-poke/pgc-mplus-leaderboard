@@ -129,6 +129,10 @@ export async function computeSpecLeader(spec, encounters, rankingsPerDungeon = 5
           hardModeLevel: r.hardModeLevel,
           talents: r.talents,
           gear: r.gear,
+          report: {
+            code: r.report?.code,
+            fightID: r.report?.fightID,
+          },
         };
       }
     }
