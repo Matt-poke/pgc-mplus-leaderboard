@@ -28,15 +28,25 @@ export default async function handler(req, res) {
     }));
 
     // Les talents choisis : on ne garde que ceux qui ont un sort associé
-    // (certains nœuds du loadout sont des connecteurs sans effet propre),
-    // et on déduplique par nom.
-    const talentNames = [
-      ...new Set(
-        (data.talentLoadout?.loadout || [])
-          .map((entry) => entry.node?.entries?.[entry.entryIndex]?.spell?.name)
-          .filter(Boolean)
-      ),
-    ];
+    // (certains nœuds du loadout sont des connecteurs sans effet propre).
+    // subTreeId différent de 0 indique un talent de héros.
+    const seen = new Set();
+    const talents = [];
+    for (const entry of data.talentLoadout?.loadout || []) {
+      const chosen = entry.node?.entries?.[entry.entryIndex];
+      const spell = chosen?.spell;
+      if (!spell?.name || seen.has(spell.name)) continue;
+      seen.add(spell.name);
+      talents.push({
+        name: spell.name,
+        icon: spell.icon,
+        rank: entry.rank,
+        maxRanks: chosen.maxRanks,
+        isHero: (entry.node?.subTreeId || 0) !== 0,
+        row: entry.node?.row ?? 0,
+        col: entry.node?.col ?? 0,
+      });
+    }
 
     res.status(200).json({
       name: data.name,
@@ -46,7 +56,7 @@ export default async function handler(req, res) {
       thumbnailUrl: data.thumbnail_url,
       itemLevelEquipped: data.gear?.item_level_equipped,
       gearSlots,
-      talentNames,
+      talents,
     });
   } catch (err) {
     console.error(err);

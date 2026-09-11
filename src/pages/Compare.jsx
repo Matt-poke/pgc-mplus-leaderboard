@@ -21,18 +21,96 @@ const SLOT_LABELS = {
   offhand: "Main secondaire",
 };
 
+const QUALITY_COLORS = {
+  0: "#9d9d9d",
+  1: "#ffffff",
+  2: "#1eff00",
+  3: "#0070dd",
+  4: "#a335ee",
+  5: "#ff8000",
+};
+
+function iconUrl(icon, size = "medium") {
+  return `https://wow.zamimg.com/images/wow/icons/${size}/${icon}.jpg`;
+}
+
 function realmSlug(displayName) {
   if (!displayName) return "";
   return displayName
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // accents
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/'/g, "")
     .replace(/\s+/g, "-");
 }
 
 function specSlug(className, spec) {
   return `${className.toLowerCase()}-${spec.toLowerCase().replace(/\s+/g, "")}`;
+}
+
+function GearGrid({ gear }) {
+  if (!gear) return <p className="leader-empty">Indisponible</p>;
+  return (
+    <div className="icon-grid">
+      {gear.gearSlots.map((item) => (
+        <div
+          className="icon-tile"
+          key={item.slot}
+          style={{ "--quality-color": QUALITY_COLORS[item.quality] || QUALITY_COLORS[1] }}
+          title={`${item.name} (${item.itemLevel})`}
+        >
+          <img src={iconUrl(item.icon)} alt={item.name} loading="lazy" />
+          <span className="icon-badge">{item.itemLevel}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TalentGrid({ talents, otherNames }) {
+  if (!talents) return <p className="leader-empty">Indisponible</p>;
+
+  const groups = [
+    { label: "Talents de héros", items: talents.filter((t) => t.isHero) },
+    { label: "Talents de classe / spé", items: talents.filter((t) => !t.isHero) },
+  ];
+
+  return (
+    <>
+      {groups.map((g) => {
+        if (g.items.length === 0) return null;
+        const maxRow = Math.max(...g.items.map((t) => t.row)) + 1;
+        const maxCol = Math.max(...g.items.map((t) => t.col)) + 1;
+        return (
+          <div key={g.label}>
+            <p className="compare-total-label">{g.label}</p>
+            <div
+              className="talent-tree"
+              style={{
+                gridTemplateRows: `repeat(${maxRow}, 2.6rem)`,
+                gridTemplateColumns: `repeat(${maxCol}, 2.6rem)`,
+              }}
+            >
+              {g.items.map((t) => {
+                const unique = otherNames && !otherNames.has(t.name);
+                return (
+                  <div
+                    className={`icon-tile${unique ? " icon-tile-unique" : ""}`}
+                    key={t.name}
+                    title={t.name}
+                    style={{ gridRow: t.row + 1, gridColumn: t.col + 1 }}
+                  >
+                    <img src={iconUrl(t.icon)} alt={t.name} loading="lazy" />
+                    {t.maxRanks > 1 && <span className="icon-badge">{t.rank}</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
 }
 
 export default function Compare() {
@@ -97,14 +175,8 @@ export default function Compare() {
     ? SPECS.find((s) => s.className === character.className && specSlug(character.className, character.mainSpec) === s.slug)
     : null;
 
-  const allSlots = myGear || leaderGear
-    ? [...new Set([...(myGear?.gearSlots || []), ...(leaderGear?.gearSlots || [])].map((g) => g.slot))]
-    : [];
-
-  const myTalents = new Set(myGear?.talentNames || []);
-  const leaderTalents = new Set(leaderGear?.talentNames || []);
-  const onlyMine = (myGear?.talentNames || []).filter((t) => !leaderTalents.has(t));
-  const onlyLeader = (leaderGear?.talentNames || []).filter((t) => !myTalents.has(t));
+  const myTalentNames = new Set((myGear?.talents || []).map((t) => t.name));
+  const leaderTalentNames = new Set((leaderGear?.talents || []).map((t) => t.name));
 
   return (
     <>
@@ -182,55 +254,33 @@ export default function Compare() {
             ))}
           </div>
 
-          {(myGear || leaderGear) && (
-            <>
-              <h3 className="section-subtitle">
-                Stuff — toi ({myGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl) vs n°1 (
-                {leaderGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl)
-              </h3>
-              <div className="spec-list">
-                {allSlots.map((slot) => {
-                  const mine = myGear?.gearSlots.find((g) => g.slot === slot);
-                  const theirs = leaderGear?.gearSlots.find((g) => g.slot === slot);
-                  return (
-                    <div className="gear-row" key={slot}>
-                      <span className="spec-label">{SLOT_LABELS[slot] || slot}</span>
-                      <span className="gear-item">{mine ? `${mine.name} (${mine.itemLevel})` : "—"}</span>
-                      <span className="gear-item">{theirs ? `${theirs.name} (${theirs.itemLevel})` : "—"}</span>
-                    </div>
-                  );
-                })}
-              </div>
+          <h3 className="section-subtitle">
+            Stuff — toi ({myGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl) vs n°1 (
+            {leaderGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl)
+          </h3>
+          <div className="compare-columns">
+            <div>
+              <p className="compare-total-label">Toi</p>
+              <GearGrid gear={myGear} />
+            </div>
+            <div>
+              <p className="compare-total-label">N°1</p>
+              <GearGrid gear={leaderGear} />
+            </div>
+          </div>
 
-              <h3 className="section-subtitle">Différences de talents</h3>
-              <div className="talent-diff">
-                <div>
-                  <p className="compare-total-label">Toi seul(e)</p>
-                  {onlyMine.length === 0 ? (
-                    <p className="leader-empty">Aucune différence</p>
-                  ) : (
-                    <ul>
-                      {onlyMine.map((t) => (
-                        <li key={t}>{t}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <div>
-                  <p className="compare-total-label">N°1 seul(e)</p>
-                  {onlyLeader.length === 0 ? (
-                    <p className="leader-empty">Aucune différence</p>
-                  ) : (
-                    <ul>
-                      {onlyLeader.map((t) => (
-                        <li key={t}>{t}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
+          <h3 className="section-subtitle">Talents</h3>
+          <p className="page-subtitle">Un liseré coloré signale un talent que l'autre n'a pas pris</p>
+          <div className="compare-columns">
+            <div>
+              <p className="compare-total-label">Toi</p>
+              <TalentGrid talents={myGear?.talents} otherNames={leaderTalentNames} />
+            </div>
+            <div>
+              <p className="compare-total-label">N°1</p>
+              <TalentGrid talents={leaderGear?.talents} otherNames={myTalentNames} />
+            </div>
+          </div>
         </section>
       )}
     </>
