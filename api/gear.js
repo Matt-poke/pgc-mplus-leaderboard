@@ -23,6 +23,7 @@ export default async function handler(req, res) {
     const gearSlots = Object.entries(data.gear?.items || {}).map(([slot, item]) => ({
       slot,
       name: item.name,
+      icon: item.icon,
       itemLevel: item.item_level,
       quality: item.item_quality,
     }));
