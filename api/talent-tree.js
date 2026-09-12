@@ -24,6 +24,7 @@ function simplifyNode(node, icons) {
         spellId: c.spell_tooltip?.spell?.id,
         name: c.talent?.name,
         icon: icons.get(c.spell_tooltip?.spell?.id) || null,
+        description: c.spell_tooltip?.description || null,
       })),
     };
   }
@@ -35,6 +36,7 @@ function simplifyNode(node, icons) {
     spellId: firstRank?.tooltip?.spell_tooltip?.spell?.id,
     name: firstRank?.tooltip?.talent?.name,
     icon: icons.get(firstRank?.tooltip?.spell_tooltip?.spell?.id) || null,
+    description: firstRank?.tooltip?.spell_tooltip?.description || null,
   };
 }
 

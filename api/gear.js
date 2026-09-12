@@ -26,6 +26,8 @@ export default async function handler(req, res) {
       icon: item.icon,
       itemLevel: item.item_level,
       quality: item.item_quality,
+      enchant: item.enchants_detail?.[0]?.name || null,
+      gems: (item.gems_detail || []).map((g) => g.name),
     }));
 
     // Les talents choisis : on ne garde que ceux qui ont un sort associé

@@ -58,22 +58,32 @@ function TreeSection({ title, nodes: rawNodes, selectedIds, choiceSpellByNode })
           const selected = selectedIds.has(n.id);
           let icon = n.icon;
           let label = n.name;
+          let description = n.description;
 
           if (n.isChoice) {
             const chosenSpellId = choiceSpellByNode.get(n.id);
             const opt = n.options.find((o) => o.spellId === chosenSpellId) || n.options[0];
             icon = opt?.icon;
-            label = n.options.map((o) => o.name).join(" / ");
+            label = opt?.name;
+            description = opt?.description;
           }
 
           return (
             <div
               key={n.id}
-              className={`talent-node ${selected ? "talent-node-selected" : "talent-node-dim"}`}
+              className={`talent-node tooltip-wrapper ${selected ? "talent-node-selected" : "talent-node-dim"}`}
               style={{ left: p.x - CELL / 2, top: p.y - CELL / 2, width: CELL, height: CELL }}
-              title={label}
             >
               {icon && <img src={icon} alt="" loading="lazy" />}
+              <div className="tooltip-box">
+                <p className="tooltip-title">{label}</p>
+                {n.isChoice && (
+                  <p className="tooltip-line tooltip-choice-note">
+                    Choix : {n.options.map((o) => o.name).join(" ou ")}
+                  </p>
+                )}
+                {description && <p className="tooltip-line">{description}</p>}
+              </div>
             </div>
           );
         })}

@@ -309,6 +309,53 @@ body {
   overflow-x: auto;
 }
 
+/* icon-tile et talent-node ont déjà leur propre position (relative/absolute) :
+   pas besoin d'en redéfinir une ici, ça casserait le placement des nœuds. */
+.tooltip-box {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: max-content;
+  max-width: 220px;
+  background: #100e18;
+  border: 1px solid var(--tt-color, var(--class-color, #f5d76e));
+  border-radius: 4px;
+  padding: 0.5rem 0.65rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  text-align: left;
+}
+
+.tooltip-wrapper:hover .tooltip-box {
+  display: block;
+}
+
+.tooltip-title {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--tt-color, var(--class-color, #f5d76e));
+}
+
+.tooltip-line {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--text-dim);
+  white-space: normal;
+}
+
+.tooltip-enchant {
+  color: #1eff00;
+}
+
+.tooltip-choice-note {
+  font-style: italic;
+}
+
 .talent-layout {
   display: flex;
   flex-direction: column;
