@@ -3,8 +3,9 @@ import { SPECS } from "./_specs.js";
 import { getSeasonEncounters, computeSpecLeader } from "./_wcl.js";
 
 // Combien de spécialisations on traite par appel. Avec 8 requêtes par spé,
-// 2 spés = 16 requêtes WCL par invocation — reste rapide et léger.
-const BATCH_SIZE = 2;
+// UNE SEULE spé par appel reste confortablement sous la limite de 30s de
+// cron-job.org (qui remplace GitHub Actions, trop peu fiable en fréquence).
+const BATCH_SIZE = 1;
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
