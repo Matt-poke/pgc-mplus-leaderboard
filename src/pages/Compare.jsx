@@ -121,6 +121,7 @@ export default function Compare() {
   const [leader, setLeader] = useState(null);
   const [myGear, setMyGear] = useState(null);
   const [leaderGear, setLeaderGear] = useState(null);
+  const [selectedDungeon, setSelectedDungeon] = useState("season");
 
   async function fetchGear(name, server, region) {
     const params = new URLSearchParams({ name, server, region });
@@ -137,6 +138,7 @@ export default function Compare() {
     setLeader(null);
     setMyGear(null);
     setLeaderGear(null);
+    setSelectedDungeon("season");
 
     try {
       const params = new URLSearchParams(form);
@@ -177,6 +179,12 @@ export default function Compare() {
 
   const myTalentNames = new Set((myGear?.talents || []).map((t) => t.name));
   const leaderTalentNames = new Set((leaderGear?.talents || []).map((t) => t.name));
+
+  const leaderScoreForSelection = leader
+    ? selectedDungeon === "season"
+      ? leader.total
+      : leader.dungeonScores?.find((d) => d.dungeon === selectedDungeon)?.score ?? null
+    : null;
 
   return (
     <>
@@ -232,27 +240,58 @@ export default function Compare() {
           <div className="compare-totals">
             <div className="compare-total-block">
               <span className="compare-total-label">Toi</span>
-              <span className="score compare-total-score">{Math.round(character.total)}</span>
+              <span className="score compare-total-score">
+                {Math.round(
+                  selectedDungeon === "season"
+                    ? character.total
+                    : character.dungeons.find((d) => d.dungeon === selectedDungeon)?.score || 0
+                )}
+              </span>
             </div>
             <div className="compare-total-block">
               <span className="compare-total-label">N°1 {specInfo?.label || character.mainSpec}</span>
               <span className="score compare-total-score">
-                {leader ? Math.round(leader.total) : "—"}
+                {leaderScoreForSelection !== null ? Math.round(leaderScoreForSelection) : "—"}
               </span>
+            </div>
+            <div className="compare-total-block">
+              <label className="compare-total-label" htmlFor="dungeon-select">
+                Comparer sur
+              </label>
+              <select
+                id="dungeon-select"
+                value={selectedDungeon}
+                onChange={(e) => setSelectedDungeon(e.target.value)}
+              >
+                <option value="season">Saison (cumulé)</option>
+                {character.dungeons.map((d) => (
+                  <option key={d.dungeon} value={d.dungeon}>
+                    {d.dungeon}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           <h3 className="section-subtitle">Score par donjon</h3>
           <div className="spec-list">
-            {character.dungeons.map((d) => (
-              <div className="spec-row" key={d.dungeon}>
-                <span className="spec-label">{d.dungeon}</span>
-                <span className="leader-name">{d.spec}</span>
-                <span className="region-badge">ilvl {d.itemLevel}</span>
-                <span className="score">{Math.round(d.score)}</span>
-              </div>
-            ))}
+            {character.dungeons.map((d) => {
+              const leaderDungeonScore = leader?.dungeonScores?.find(
+                (ld) => ld.dungeon === d.dungeon
+              )?.score;
+              return (
+                <div className="spec-row" key={d.dungeon}>
+                  <span className="spec-label">{d.dungeon}</span>
+                  <span className="leader-name">{d.spec}</span>
+                  <span className="score">{Math.round(d.score)}</span>
+                  <span className="score">
+                    {leaderDungeonScore !== undefined ? Math.round(leaderDungeonScore) : "—"}
+                  </span>
+                </div>
+              );
+            })}
           </div>
+          <p className="page-subtitle compare-columns-caption">Toi (3e colonne) vs n°1 (4e colonne)</p>
 
           <h3 className="section-subtitle">
             Stuff — toi ({myGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl) vs n°1 (

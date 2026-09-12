@@ -137,13 +137,13 @@ export async function computeSpecLeader(spec, encounters, rankingsPerDungeon = 5
           server: r.server?.name,
           region: r.server?.region,
           total: 0,
-          dungeonsSeen: 0,
+          dungeonScores: [], // score de ce joueur pour chaque donjon (Phase 5)
           bestRun: null, // le run individuel avec le score le plus haut, pour ses talents/stuff
         });
       }
       const p = players.get(key);
       p.total += r.score;
-      p.dungeonsSeen += 1;
+      p.dungeonScores.push({ dungeon: enc.name, score: r.score, hardModeLevel: r.hardModeLevel });
       if (!p.bestRun || r.score > p.bestRun.score) {
         p.bestRun = {
           dungeon: enc.name,

@@ -232,6 +232,21 @@ body {
   text-align: left;
 }
 
+.compare-total-block select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 0.4rem 0.6rem;
+  font-family: "Inter", sans-serif;
+  font-size: 0.85rem;
+}
+
+.compare-columns-caption {
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+}
+
 .section-subtitle {
   font-family: "Fraunces", serif;
   font-weight: 600;
