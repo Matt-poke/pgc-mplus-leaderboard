@@ -143,7 +143,12 @@ export async function computeSpecLeader(spec, encounters, rankingsPerDungeon = 5
       }
       const p = players.get(key);
       p.total += r.score;
-      p.dungeonScores.push({ dungeon: enc.name, score: r.score, hardModeLevel: r.hardModeLevel });
+      p.dungeonScores.push({
+        dungeon: enc.name,
+        score: r.score,
+        hardModeLevel: r.hardModeLevel,
+        report: { code: r.report?.code, fightID: r.report?.fightID },
+      });
       if (!p.bestRun || r.score > p.bestRun.score) {
         p.bestRun = {
           dungeon: enc.name,
