@@ -51,9 +51,14 @@ export async function getFullTalentTree(treeId, specId) {
     (tree.playable_specializations || []).some((s) => s.id === specId)
   );
 
+  // Les nœuds d'arbre de héros apparaissent aussi, en double, dans la liste
+  // brute des talents de spécialisation — on les retire de cette liste.
+  const heroNodeIds = new Set(heroTrees.flatMap((t) => (t.hero_talent_nodes || []).map((n) => n.id)));
+  const specNodesOnly = (specTree.spec_talent_nodes || []).filter((n) => !heroNodeIds.has(n.id));
+
   return {
     classNodes: specTree.class_talent_nodes || [],
-    specNodes: specTree.spec_talent_nodes || [],
+    specNodes: specNodesOnly,
     heroTrees: heroTrees.map((t) => ({
       id: t.id,
       name: t.name,

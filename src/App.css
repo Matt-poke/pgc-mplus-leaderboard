@@ -326,7 +326,9 @@ body {
   flex-direction: row;
   gap: 3rem;
   justify-content: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  width: 100%;
 }
 
 .talent-tree-svg {
