@@ -186,6 +186,7 @@ export default function Compare() {
     );
     if (!leaderDungeon?.report?.code) {
       setDamageError("Le n°1 n'a pas de report exploitable pour ce donjon");
+      setDamageLoading(false);
       return;
     }
 
