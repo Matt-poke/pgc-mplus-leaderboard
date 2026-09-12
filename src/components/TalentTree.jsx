@@ -107,27 +107,31 @@ export default function TalentTree({ spec, selectedTalents }) {
     tree.heroTrees.find((h) => h.nodes.some((n) => selectedIds.has(n.id))) || tree.heroTrees[0];
 
   return (
-    <>
-      <TreeSection
-        title="Talents de classe"
-        nodes={tree.classNodes}
-        selectedIds={selectedIds}
-        choiceSpellByNode={choiceSpellByNode}
-      />
-      <TreeSection
-        title="Talents de spécialisation"
-        nodes={tree.specNodes}
-        selectedIds={selectedIds}
-        choiceSpellByNode={choiceSpellByNode}
-      />
+    <div className="talent-layout">
       {heroTree && (
+        <div className="talent-hero-row">
+          <TreeSection
+            title={`Talents de héros — ${heroTree.name}`}
+            nodes={heroTree.nodes}
+            selectedIds={selectedIds}
+            choiceSpellByNode={choiceSpellByNode}
+          />
+        </div>
+      )}
+      <div className="talent-main-row">
         <TreeSection
-          title={`Talents de héros — ${heroTree.name}`}
-          nodes={heroTree.nodes}
+          title="Talents de classe"
+          nodes={tree.classNodes}
           selectedIds={selectedIds}
           choiceSpellByNode={choiceSpellByNode}
         />
-      )}
-    </>
+        <TreeSection
+          title="Talents de spécialisation"
+          nodes={tree.specNodes}
+          selectedIds={selectedIds}
+          choiceSpellByNode={choiceSpellByNode}
+        />
+      </div>
+    </div>
   );
 }
