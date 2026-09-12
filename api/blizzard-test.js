@@ -35,7 +35,14 @@ export default async function handler(req, res) {
     );
     const specTreeData = await specTreeRes.json();
 
-    res.status(200).json({ index: treeData, specTree: specTreeData });
+    // Test : l'icône d'un sort précis (Barrière prismatique, spell id 235450)
+    const mediaRes = await fetch(
+      "https://us.api.blizzard.com/data/wow/media/spell/235450?namespace=static-us&locale=fr_FR",
+      { headers: { Authorization: `Bearer ${access_token}` } }
+    );
+    const mediaData = await mediaRes.json();
+
+    res.status(200).json({ specTreeSummary: { classNodesCount: specTreeData.class_talent_nodes?.length }, media: mediaData });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
