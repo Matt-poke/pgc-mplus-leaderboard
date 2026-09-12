@@ -39,6 +39,8 @@ export default async function handler(req, res) {
       if (!spell?.name || seen.has(spell.name)) continue;
       seen.add(spell.name);
       talents.push({
+        nodeId: entry.node?.id,
+        spellId: spell.id,
         name: spell.name,
         icon: spell.icon,
         rank: entry.rank,

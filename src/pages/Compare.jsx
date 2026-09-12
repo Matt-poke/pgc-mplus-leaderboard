@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CLASSES } from "../classes.js";
 import { SPECS } from "../specs.js";
+import TalentTree from "../components/TalentTree.jsx";
 
 const SLOT_LABELS = {
   head: "Tête",
@@ -64,52 +65,6 @@ function GearGrid({ gear, unavailableReason }) {
         </div>
       ))}
     </div>
-  );
-}
-
-function TalentGrid({ talents, otherNames, unavailableReason }) {
-  if (!talents) return <p className="leader-empty">{unavailableReason || "Indisponible"}</p>;
-
-  const groups = [
-    { label: "Talents de héros", items: talents.filter((t) => t.isHero) },
-    { label: "Talents de classe / spé", items: talents.filter((t) => !t.isHero) },
-  ];
-
-  return (
-    <>
-      {groups.map((g) => {
-        if (g.items.length === 0) return null;
-        const maxRow = Math.max(...g.items.map((t) => t.row)) + 1;
-        const maxCol = Math.max(...g.items.map((t) => t.col)) + 1;
-        return (
-          <div key={g.label}>
-            <p className="compare-total-label">{g.label}</p>
-            <div
-              className="talent-tree"
-              style={{
-                gridTemplateRows: `repeat(${maxRow}, 2.6rem)`,
-                gridTemplateColumns: `repeat(${maxCol}, 2.6rem)`,
-              }}
-            >
-              {g.items.map((t) => {
-                const unique = otherNames && !otherNames.has(t.name);
-                return (
-                  <div
-                    className={`icon-tile${unique ? " icon-tile-unique" : ""}`}
-                    key={t.name}
-                    title={t.name}
-                    style={{ gridRow: t.row + 1, gridColumn: t.col + 1 }}
-                  >
-                    <img src={iconUrl(t.icon)} alt={t.name} loading="lazy" />
-                    {t.maxRanks > 1 && <span className="icon-badge">{t.rank}</span>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </>
   );
 }
 
@@ -279,9 +234,6 @@ export default function Compare() {
     ? SPECS.find((s) => s.className === character.className && specSlug(character.className, character.mainSpec) === s.slug)
     : null;
 
-  const myTalentNames = new Set((myGear?.talents || []).map((t) => t.name));
-  const leaderTalentNames = new Set((leaderGear?.talents || []).map((t) => t.name));
-
   const leaderScoreForSelection = leader?.overall
     ? selectedDungeon === "season"
       ? leader.overall.total
@@ -434,26 +386,23 @@ export default function Compare() {
             </div>
           </div>
 
-          <h3 className="section-subtitle">Talents</h3>
-          <p className="page-subtitle">Un liseré coloré signale un talent que l'autre n'a pas pris</p>
-          <div className="compare-columns">
-            <div>
-              <p className="compare-total-label">Toi</p>
-              <TalentGrid talents={myGear?.talents} otherNames={leaderTalentNames} />
-            </div>
-            <div>
-              <p className="compare-total-label">N°1</p>
-              <TalentGrid
-                talents={leaderGear?.talents}
-                otherNames={myTalentNames}
-                unavailableReason={
-                  leader?.overall?.region === "CN" && !leader?.nonCN
-                    ? "Non disponible pour les serveurs chinois (API Blizzard fermée depuis 2016)"
-                    : null
-                }
-              />
-            </div>
-          </div>
+          <h3 className="section-subtitle">Talents — {character.name}</h3>
+          {myGear?.talents ? (
+            <TalentTree spec={specInfo?.slug} selectedTalents={myGear.talents} />
+          ) : (
+            <p className="leader-empty">Indisponible</p>
+          )}
+
+          <h3 className="section-subtitle">Talents — N°1</h3>
+          {leader?.overall?.region === "CN" && !leader?.nonCN ? (
+            <p className="leader-empty">
+              Non disponible pour les serveurs chinois (API Blizzard fermée depuis 2016)
+            </p>
+          ) : leaderGear?.talents ? (
+            <TalentTree spec={specInfo?.slug} selectedTalents={leaderGear.talents} />
+          ) : (
+            <p className="leader-empty">Indisponible</p>
+          )}
           <h3 className="section-subtitle">Ordre et sources de dégâts</h3>
           {selectedDungeon === "season" ? (
             <p className="leader-empty">
