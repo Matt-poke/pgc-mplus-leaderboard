@@ -223,7 +223,9 @@ export default function Compare() {
       const found = await res.json();
       if (!res.ok) {
         setDamageLoading(false);
-        setDamageError(`${found.error} — colle le lien manuellement ci-dessous à la place.`);
+        setDamageError(
+          "Aucun rapport trouvé pour ce donjon parmi tes reports récents — essaie un autre donjon, ou colle un lien toi-même ci-dessous."
+        );
         return;
       }
       await runDamageAnalysis(found.code, found.fightID);
@@ -347,7 +349,13 @@ export default function Compare() {
               <select
                 id="dungeon-select"
                 value={selectedDungeon}
-                onChange={(e) => setSelectedDungeon(e.target.value)}
+                onChange={(e) => {
+                  setSelectedDungeon(e.target.value);
+                  setDamageError(null);
+                  setMyDamage(null);
+                  setLeaderDamage(null);
+                  setReportUrl("");
+                }}
               >
                 <option value="season">Saison (cumulé)</option>
                 {character.dungeons.map((d) => (
@@ -467,6 +475,11 @@ export default function Compare() {
 
               {myDamage && leaderDamage && (
                 <div className="spec-list">
+                  <div className="damage-row damage-row-header">
+                    <span className="compare-total-label">Sort</span>
+                    <span className="compare-total-label">Toi</span>
+                    <span className="compare-total-label">N°1 ({leader.overall.name})</span>
+                  </div>
                   {[
                     ...new Set([
                       ...myDamage.abilities.map((a) => a.name),
