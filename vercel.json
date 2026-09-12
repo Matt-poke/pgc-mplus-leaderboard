@@ -4,6 +4,7 @@
   ],
   "functions": {
     "api/find-report.js": { "maxDuration": 60 },
-    "api/refresh.js": { "maxDuration": 60 }
+    "api/refresh.js": { "maxDuration": 60 },
+    "api/talent-tree.js": { "maxDuration": 60 }
   }
 }
