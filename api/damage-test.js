@@ -23,7 +23,20 @@ export default async function handler(req, res) {
       { code: TEST_CODE, fightID: TEST_FIGHT_ID }
     );
 
-    res.status(200).json({ playerData });
+    const damageTable = await graphql(
+      `
+        query($code: String!, $fightID: Int!, $sourceID: Int!) {
+          reportData {
+            report(code: $code) {
+              table(fightIDs: [$fightID], dataType: DamageDone, sourceID: $sourceID)
+            }
+          }
+        }
+      `,
+      { code: TEST_CODE, fightID: TEST_FIGHT_ID, sourceID: 368 }
+    );
+
+    res.status(200).json({ playerData, damageTable });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
