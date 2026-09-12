@@ -127,6 +127,7 @@ export default function Compare() {
   const [leaderDamage, setLeaderDamage] = useState(null);
   const [damageError, setDamageError] = useState(null);
   const [damageLoading, setDamageLoading] = useState(false);
+  const [damageTargetName, setDamageTargetName] = useState(null);
 
   async function fetchGear(name, server, region) {
     const params = new URLSearchParams({ name, server, region });
@@ -181,11 +182,18 @@ export default function Compare() {
   }
 
   async function runDamageAnalysis(myCode, myFightID) {
-    const leaderDungeon = leader?.overall?.dungeonScores?.find(
-      (d) => d.dungeon === selectedDungeon
-    );
-    if (!leaderDungeon?.report?.code) {
-      setDamageError("Le n°1 n'a pas de report exploitable pour ce donjon");
+    // Pour l'analyse des sorts, le n°1 DU DONJON précis est plus pertinent
+    // que le n°1 de la saison (qui peut avoir un log privé sur ce donjon-là
+    // précisément, alors qu'un autre joueur a le sien public).
+    const dungeonLeader = leader?.perDungeonLeaders?.[selectedDungeon];
+    const target = dungeonLeader?.report?.code
+      ? dungeonLeader
+      : leader?.overall?.dungeonScores?.find((d) => d.dungeon === selectedDungeon)?.report?.code
+        ? { ...leader.overall, report: leader.overall.dungeonScores.find((d) => d.dungeon === selectedDungeon).report }
+        : null;
+
+    if (!target?.report?.code) {
+      setDamageError("Aucun report exploitable trouvé pour ce donjon, ni pour le n°1 saison ni pour le n°1 du donjon");
       setDamageLoading(false);
       return;
     }
@@ -197,7 +205,7 @@ export default function Compare() {
           `/api/damage?code=${myCode}&fightID=${myFightID}&name=${encodeURIComponent(character.name)}`
         ).then((r) => r.json()),
         fetch(
-          `/api/damage?code=${leaderDungeon.report.code}&fightID=${leaderDungeon.report.fightID}&name=${encodeURIComponent(leader.overall.name)}`
+          `/api/damage?code=${target.report.code}&fightID=${target.report.fightID}&name=${encodeURIComponent(target.name)}`
         ).then((r) => r.json()),
       ]);
 
@@ -206,6 +214,7 @@ export default function Compare() {
 
       setMyDamage(mine);
       setLeaderDamage(theirs);
+      setDamageTargetName(target.name);
     } catch (err) {
       setDamageError(err.message);
     } finally {
@@ -362,6 +371,7 @@ export default function Compare() {
                   setDamageError(null);
                   setMyDamage(null);
                   setLeaderDamage(null);
+                  setDamageTargetName(null);
                   setReportUrl("");
                 }}
               >
@@ -486,7 +496,9 @@ export default function Compare() {
                   <div className="damage-row damage-row-header">
                     <span className="compare-total-label">Sort</span>
                     <span className="compare-total-label">Toi</span>
-                    <span className="compare-total-label">N°1 ({leader.overall.name})</span>
+                    <span className="compare-total-label">
+                      N°1 de ce donjon ({damageTargetName})
+                    </span>
                   </div>
                   {[
                     ...new Set([

@@ -97,6 +97,7 @@ export async function getSeasonEncounters(zoneId) {
 // (talents + stuff).
 export async function computeSpecLeader(spec, encounters, rankingsPerDungeon = 50) {
   const players = new Map();
+  const perDungeonLeaders = {}; // n°1 spécifique à chaque donjon (peut différer du n°1 saison)
 
   for (const enc of encounters) {
     const data = await graphql(
@@ -119,6 +120,17 @@ export async function computeSpecLeader(spec, encounters, rankingsPerDungeon = 5
 
     const rankings = data?.worldData?.encounter?.characterRankings?.rankings || [];
     const top = rankings.slice(0, rankingsPerDungeon);
+
+    if (top[0]) {
+      const r0 = top[0];
+      perDungeonLeaders[enc.name] = {
+        name: r0.name,
+        server: r0.server?.name,
+        region: r0.server?.region,
+        score: r0.score,
+        report: { code: r0.report?.code, fightID: r0.report?.fightID },
+      };
+    }
 
     // Ne garder que la meilleure ligne de chaque joueur pour CE donjon.
     const bestPerPlayerThisDungeon = new Map();
@@ -169,5 +181,5 @@ export async function computeSpecLeader(spec, encounters, rankingsPerDungeon = 5
   const overall = sorted[0] || null;
   const nonCN = sorted.find((p) => p.region !== "CN") || null;
 
-  return { overall, nonCN };
+  return { overall, nonCN, perDungeonLeaders };
 }
