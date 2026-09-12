@@ -255,9 +255,9 @@ body {
   color: var(--text);
 }
 
-.gear-row {
+.damage-row {
   display: grid;
-  grid-template-columns: 7rem 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 1rem;
   padding: 0.55rem 0.85rem;
   background: var(--surface);
@@ -265,7 +265,7 @@ body {
   font-size: 0.85rem;
 }
 
-.gear-row:first-child {
+.damage-row:first-child {
   border-top: none;
 }
 
@@ -340,8 +340,8 @@ body {
 }
 
 @media (max-width: 560px) {
-  .gear-row {
-    grid-template-columns: 5rem 1fr 1fr;
+  .damage-row {
+    grid-template-columns: 1fr 1fr 1fr;
     font-size: 0.75rem;
   }
   .compare-columns {

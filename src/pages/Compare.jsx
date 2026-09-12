@@ -122,6 +122,11 @@ export default function Compare() {
   const [myGear, setMyGear] = useState(null);
   const [leaderGear, setLeaderGear] = useState(null);
   const [selectedDungeon, setSelectedDungeon] = useState("season");
+  const [reportUrl, setReportUrl] = useState("");
+  const [myDamage, setMyDamage] = useState(null);
+  const [leaderDamage, setLeaderDamage] = useState(null);
+  const [damageError, setDamageError] = useState(null);
+  const [damageLoading, setDamageLoading] = useState(false);
 
   async function fetchGear(name, server, region) {
     const params = new URLSearchParams({ name, server, region });
@@ -172,6 +177,56 @@ export default function Compare() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  function parseReportUrl(url) {
+    // Formats possibles : .../reports/CODE#fight=12  ou  .../reports/CODE?fight=12
+    const codeMatch = url.match(/reports\/([a-zA-Z0-9]+)/);
+    const fightMatch = url.match(/fight=(\d+)/);
+    if (!codeMatch || !fightMatch) return null;
+    return { code: codeMatch[1], fightID: Number(fightMatch[1]) };
+  }
+
+  async function handleAnalyzeDamage() {
+    setDamageError(null);
+    setMyDamage(null);
+    setLeaderDamage(null);
+
+    const parsed = parseReportUrl(reportUrl);
+    if (!parsed) {
+      setDamageError("Lien de report non reconnu — colle l'URL complète avec #fight=XX");
+      return;
+    }
+
+    const leaderDungeon = leader?.overall?.dungeonScores?.find(
+      (d) => d.dungeon === selectedDungeon
+    );
+    if (!leaderDungeon?.report?.code) {
+      setDamageError("Le n°1 n'a pas de report exploitable pour ce donjon");
+      return;
+    }
+
+    setDamageLoading(true);
+    try {
+      const [mine, theirs] = await Promise.all([
+        fetch(
+          `/api/damage?code=${parsed.code}&fightID=${parsed.fightID}&name=${encodeURIComponent(character.name)}`
+        ).then((r) => r.json()),
+        fetch(
+          `/api/damage?code=${leaderDungeon.report.code}&fightID=${leaderDungeon.report.fightID}&name=${encodeURIComponent(leader.overall.name)}`
+        ).then((r) => r.json()),
+      ]);
+
+      if (mine.error) throw new Error(`Ton report : ${mine.error}`);
+      if (theirs.error) throw new Error(`Report du n°1 : ${theirs.error}`);
+
+      setMyDamage(mine);
+      setLeaderDamage(theirs);
+    } catch (err) {
+      setDamageError(err.message);
+    } finally {
+      setDamageLoading(false);
     }
   }
 
@@ -348,6 +403,68 @@ export default function Compare() {
               />
             </div>
           </div>
+          <h3 className="section-subtitle">Ordre et sources de dégâts</h3>
+          {selectedDungeon === "season" ? (
+            <p className="leader-empty">
+              Choisis un donjon précis dans le sélecteur ci-dessus pour analyser tes sorts sur ce
+              run.
+            </p>
+          ) : (
+            <>
+              <p className="page-subtitle">
+                Colle le lien de TON report Warcraft Logs pour {selectedDungeon} (celui avec
+                #fight=XX dans l'URL) — on le compare au report du n°1 sur ce même donjon.
+              </p>
+              <form
+                className="search-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAnalyzeDamage();
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="https://www.warcraftlogs.com/reports/XXXXXXXX#fight=9"
+                  value={reportUrl}
+                  onChange={(e) => setReportUrl(e.target.value)}
+                  required
+                />
+                <button type="submit" disabled={damageLoading}>
+                  {damageLoading ? "Analyse…" : "Analyser"}
+                </button>
+              </form>
+
+              {damageError && <p className="leader-empty">{damageError}</p>}
+
+              {myDamage && leaderDamage && (
+                <div className="spec-list">
+                  {[
+                    ...new Set([
+                      ...myDamage.abilities.map((a) => a.name),
+                      ...leaderDamage.abilities.map((a) => a.name),
+                    ]),
+                  ]
+                    .map((name) => ({
+                      name,
+                      mine: myDamage.abilities.find((a) => a.name === name),
+                      theirs: leaderDamage.abilities.find((a) => a.name === name),
+                    }))
+                    .sort((a, b) => (b.mine?.total || 0) - (a.mine?.total || 0))
+                    .map(({ name, mine, theirs }) => (
+                      <div className="damage-row" key={name}>
+                        <span className="spec-label">{name}</span>
+                        <span className="gear-item">
+                          {mine ? `${mine.percent.toFixed(1)}% · ${mine.casts} casts` : "—"}
+                        </span>
+                        <span className="gear-item">
+                          {theirs ? `${theirs.percent.toFixed(1)}% · ${theirs.casts} casts` : "—"}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </>
+          )}
         </section>
       )}
     </>
