@@ -219,7 +219,10 @@ export default function Compare() {
     setDamageLoading(true);
     try {
       const params = new URLSearchParams({ characterId: character.id, dungeon: selectedDungeon });
-      const res = await fetch(`/api/find-report?${params}`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000);
+      const res = await fetch(`/api/find-report?${params}`, { signal: controller.signal });
+      clearTimeout(timeout);
       const found = await res.json();
       if (!res.ok) {
         setDamageLoading(false);
@@ -231,7 +234,11 @@ export default function Compare() {
       await runDamageAnalysis(found.code, found.fightID);
     } catch (err) {
       setDamageLoading(false);
-      setDamageError(err.message);
+      if (err.name === "AbortError") {
+        setDamageError("La recherche a pris trop de temps — colle un lien toi-même ci-dessous.");
+      } else {
+        setDamageError(err.message);
+      }
     }
   }
 

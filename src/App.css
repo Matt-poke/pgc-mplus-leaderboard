@@ -269,6 +269,12 @@ body {
   border-top: none;
 }
 
+.damage-row-header {
+  background: transparent;
+  border-top: none;
+  padding-bottom: 0.25rem;
+}
+
 .gear-item {
   overflow: hidden;
   text-overflow: ellipsis;

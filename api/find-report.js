@@ -34,25 +34,28 @@ export default async function handler(req, res) {
 
     let best = null;
 
-    for (const code of candidates) {
-      const fightsData = await graphql(
-        `
-          query($code: String!) {
-            reportData {
-              report(code: $code) {
-                fights {
-                  id
-                  name
-                  keystoneLevel
+    const fightsResults = await Promise.all(
+      candidates.map((code) =>
+        graphql(
+          `
+            query($code: String!) {
+              reportData {
+                report(code: $code) {
+                  fights {
+                    id
+                    name
+                    keystoneLevel
+                  }
                 }
               }
             }
-          }
-        `,
-        { code }
-      );
+          `,
+          { code }
+        ).then((data) => ({ code, fights: data?.reportData?.report?.fights || [] }))
+      )
+    );
 
-      const fights = fightsData?.reportData?.report?.fights || [];
+    for (const { code, fights } of fightsResults) {
       for (const f of fights) {
         if (f.name === dungeon && f.keystoneLevel) {
           if (!best || f.keystoneLevel > best.keystoneLevel) {
