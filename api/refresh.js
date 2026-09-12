@@ -65,7 +65,7 @@ export default async function handler(req, res) {
         throw new Error(`Échec écriture Supabase pour ${spec.slug} : ${upsertError.message}`);
       }
 
-      results.push({ spec: spec.slug, leader: leader?.name || "(aucun trouvé)" });
+      results.push({ spec: spec.slug, leader: leader?.overall?.name || "(aucun trouvé)" });
     }
 
     // 5. On avance le curseur pour le prochain appel.

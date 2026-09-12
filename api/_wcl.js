@@ -161,5 +161,8 @@ export async function computeSpecLeader(spec, encounters, rankingsPerDungeon = 5
   }
 
   const sorted = [...players.values()].sort((a, b) => b.total - a.total);
-  return sorted[0] || null;
+  const overall = sorted[0] || null;
+  const nonCN = sorted.find((p) => p.region !== "CN") || null;
+
+  return { overall, nonCN };
 }

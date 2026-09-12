@@ -48,8 +48,8 @@ function specSlug(className, spec) {
   return `${className.toLowerCase()}-${spec.toLowerCase().replace(/\s+/g, "")}`;
 }
 
-function GearGrid({ gear }) {
-  if (!gear) return <p className="leader-empty">Indisponible</p>;
+function GearGrid({ gear, unavailableReason }) {
+  if (!gear) return <p className="leader-empty">{unavailableReason || "Indisponible"}</p>;
   return (
     <div className="icon-grid">
       {gear.gearSlots.map((item) => (
@@ -67,8 +67,8 @@ function GearGrid({ gear }) {
   );
 }
 
-function TalentGrid({ talents, otherNames }) {
-  if (!talents) return <p className="leader-empty">Indisponible</p>;
+function TalentGrid({ talents, otherNames, unavailableReason }) {
+  if (!talents) return <p className="leader-empty">{unavailableReason || "Indisponible"}</p>;
 
   const groups = [
     { label: "Talents de héros", items: talents.filter((t) => t.isHero) },
@@ -154,12 +154,15 @@ export default function Compare() {
         const slug = specSlug(data.className, data.mainSpec);
         const rankingsRes = await fetch("/api/rankings");
         const rankings = await rankingsRes.json();
-        leaderRow = rankings.find((r) => r.spec_slug === slug)?.data || null;
+        const stored = rankings.find((r) => r.spec_slug === slug)?.data || null;
+        // Compatibilité avec l'ancien format (avant le tri overall/nonCN)
+        leaderRow = stored ? { overall: stored.overall || stored, nonCN: stored.nonCN || stored } : null;
         setLeader(leaderRow);
       }
 
-      const leaderGearPromise = leaderRow
-        ? fetchGear(leaderRow.name, realmSlug(leaderRow.server), leaderRow.region)
+      const gearTarget = leaderRow?.nonCN;
+      const leaderGearPromise = gearTarget
+        ? fetchGear(gearTarget.name, realmSlug(gearTarget.server), gearTarget.region)
         : Promise.resolve(null);
 
       const [myG, leaderG] = await Promise.all([myGearPromise, leaderGearPromise]);
@@ -180,11 +183,14 @@ export default function Compare() {
   const myTalentNames = new Set((myGear?.talents || []).map((t) => t.name));
   const leaderTalentNames = new Set((leaderGear?.talents || []).map((t) => t.name));
 
-  const leaderScoreForSelection = leader
+  const leaderScoreForSelection = leader?.overall
     ? selectedDungeon === "season"
-      ? leader.total
-      : leader.dungeonScores?.find((d) => d.dungeon === selectedDungeon)?.score ?? null
+      ? leader.overall.total
+      : leader.overall.dungeonScores?.find((d) => d.dungeon === selectedDungeon)?.score ?? null
     : null;
+
+  const showingSubstitute =
+    leader?.overall && leader?.nonCN && leader.overall.name !== leader.nonCN.name;
 
   return (
     <>
@@ -276,7 +282,7 @@ export default function Compare() {
           <h3 className="section-subtitle">Score par donjon</h3>
           <div className="spec-list">
             {character.dungeons.map((d) => {
-              const leaderDungeonScore = leader?.dungeonScores?.find(
+              const leaderDungeonScore = leader?.overall?.dungeonScores?.find(
                 (ld) => ld.dungeon === d.dungeon
               )?.score;
               return (
@@ -297,6 +303,13 @@ export default function Compare() {
             Stuff — toi ({myGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl) vs n°1 (
             {leaderGear?.itemLevelEquipped?.toFixed(0) ?? "—"} ilvl)
           </h3>
+          {showingSubstitute && (
+            <p className="page-subtitle">
+              Le vrai n°1 ({leader.overall.name}, serveur chinois) n'a pas de stuff/talents
+              disponibles — comparaison de stuff/talents avec {leader.nonCN.name}, le meilleur
+              joueur non-chinois.
+            </p>
+          )}
           <div className="compare-columns">
             <div>
               <p className="compare-total-label">Toi</p>
@@ -304,7 +317,14 @@ export default function Compare() {
             </div>
             <div>
               <p className="compare-total-label">N°1</p>
-              <GearGrid gear={leaderGear} />
+              <GearGrid
+                gear={leaderGear}
+                unavailableReason={
+                  leader?.overall?.region === "CN" && !leader?.nonCN
+                    ? "Non disponible pour les serveurs chinois (API Blizzard fermée depuis 2016)"
+                    : null
+                }
+              />
             </div>
           </div>
 
@@ -317,7 +337,15 @@ export default function Compare() {
             </div>
             <div>
               <p className="compare-total-label">N°1</p>
-              <TalentGrid talents={leaderGear?.talents} otherNames={myTalentNames} />
+              <TalentGrid
+                talents={leaderGear?.talents}
+                otherNames={myTalentNames}
+                unavailableReason={
+                  leader?.overall?.region === "CN" && !leader?.nonCN
+                    ? "Non disponible pour les serveurs chinois (API Blizzard fermée depuis 2016)"
+                    : null
+                }
+              />
             </div>
           </div>
         </section>

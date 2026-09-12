@@ -64,7 +64,7 @@ export default function Home() {
             <div className="spec-list">
               {specsForClass.map((spec) => {
                 const row = rankingsBySlug[spec.slug];
-                const leader = row?.data;
+                const leader = row?.data?.overall || row?.data; // compatibilité avec l'ancien format
                 return (
                   <div className="spec-row" key={spec.slug}>
                     <span className="spec-label">{spec.label}</span>
