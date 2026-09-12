@@ -301,6 +301,14 @@ body {
   margin: 0.4rem 0 1.5rem;
 }
 
+.talent-tree-person {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
 .talent-tree-svg {
   position: absolute;
   top: 0;

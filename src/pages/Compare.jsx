@@ -386,23 +386,28 @@ export default function Compare() {
             </div>
           </div>
 
-          <h3 className="section-subtitle">Talents — {character.name}</h3>
-          {myGear?.talents ? (
-            <TalentTree spec={specInfo?.slug} selectedTalents={myGear.talents} />
-          ) : (
-            <p className="leader-empty">Indisponible</p>
-          )}
+          <h3 className="section-subtitle">Talents</h3>
+          <div className="talent-tree-person">
+            <p className="compare-total-label">Toi — {character.name}</p>
+            {myGear?.talents ? (
+              <TalentTree spec={specInfo?.slug} selectedTalents={myGear.talents} />
+            ) : (
+              <p className="leader-empty">Indisponible</p>
+            )}
+          </div>
 
-          <h3 className="section-subtitle">Talents — N°1</h3>
-          {leader?.overall?.region === "CN" && !leader?.nonCN ? (
-            <p className="leader-empty">
-              Non disponible pour les serveurs chinois (API Blizzard fermée depuis 2016)
-            </p>
-          ) : leaderGear?.talents ? (
-            <TalentTree spec={specInfo?.slug} selectedTalents={leaderGear.talents} />
-          ) : (
-            <p className="leader-empty">Indisponible</p>
-          )}
+          <div className="talent-tree-person">
+            <p className="compare-total-label">N°1</p>
+            {leader?.overall?.region === "CN" && !leader?.nonCN ? (
+              <p className="leader-empty">
+                Non disponible pour les serveurs chinois (API Blizzard fermée depuis 2016)
+              </p>
+            ) : leaderGear?.talents ? (
+              <TalentTree spec={specInfo?.slug} selectedTalents={leaderGear.talents} />
+            ) : (
+              <p className="leader-empty">Indisponible</p>
+            )}
+          </div>
           <h3 className="section-subtitle">Ordre et sources de dégâts</h3>
           {selectedDungeon === "season" ? (
             <p className="leader-empty">
