@@ -8,8 +8,15 @@ function pos(node) {
   return { x: node.col * STEP + CELL / 2, y: node.row * STEP + CELL / 2 };
 }
 
-function TreeSection({ title, nodes, selectedIds, choiceSpellByNode }) {
-  if (!nodes.length) return null;
+function TreeSection({ title, nodes: rawNodes, selectedIds, choiceSpellByNode }) {
+  if (!rawNodes.length) return null;
+
+  // Les coordonnées brutes de Blizzard ne démarrent pas forcément à 0
+  // (ex. l'arbre de spé peut commencer à la colonne 9) — on recale tout
+  // pour que chaque arbre commence à sa propre origine, sans espace vide.
+  const minRow = Math.min(...rawNodes.map((n) => n.row));
+  const minCol = Math.min(...rawNodes.map((n) => n.col));
+  const nodes = rawNodes.map((n) => ({ ...n, row: n.row - minRow, col: n.col - minCol }));
 
   const maxRow = Math.max(...nodes.map((n) => n.row)) + 1;
   const maxCol = Math.max(...nodes.map((n) => n.col)) + 1;
