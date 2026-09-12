@@ -51,6 +51,7 @@ export default async function handler(req, res) {
     const mainSpec = character.zoneRankings?.allStars?.[0]?.spec || dungeons[0]?.spec || null;
 
     res.status(200).json({
+      id: character.id,
       name: character.name,
       className,
       mainSpec,

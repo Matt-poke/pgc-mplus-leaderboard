@@ -180,6 +180,59 @@ export default function Compare() {
     }
   }
 
+  async function runDamageAnalysis(myCode, myFightID) {
+    const leaderDungeon = leader?.overall?.dungeonScores?.find(
+      (d) => d.dungeon === selectedDungeon
+    );
+    if (!leaderDungeon?.report?.code) {
+      setDamageError("Le n°1 n'a pas de report exploitable pour ce donjon");
+      return;
+    }
+
+    setDamageLoading(true);
+    try {
+      const [mine, theirs] = await Promise.all([
+        fetch(
+          `/api/damage?code=${myCode}&fightID=${myFightID}&name=${encodeURIComponent(character.name)}`
+        ).then((r) => r.json()),
+        fetch(
+          `/api/damage?code=${leaderDungeon.report.code}&fightID=${leaderDungeon.report.fightID}&name=${encodeURIComponent(leader.overall.name)}`
+        ).then((r) => r.json()),
+      ]);
+
+      if (mine.error) throw new Error(`Ton report : ${mine.error}`);
+      if (theirs.error) throw new Error(`Report du n°1 : ${theirs.error}`);
+
+      setMyDamage(mine);
+      setLeaderDamage(theirs);
+    } catch (err) {
+      setDamageError(err.message);
+    } finally {
+      setDamageLoading(false);
+    }
+  }
+
+  async function handleAutoDetect() {
+    setDamageError(null);
+    setMyDamage(null);
+    setLeaderDamage(null);
+    setDamageLoading(true);
+    try {
+      const params = new URLSearchParams({ characterId: character.id, dungeon: selectedDungeon });
+      const res = await fetch(`/api/find-report?${params}`);
+      const found = await res.json();
+      if (!res.ok) {
+        setDamageLoading(false);
+        setDamageError(`${found.error} — colle le lien manuellement ci-dessous à la place.`);
+        return;
+      }
+      await runDamageAnalysis(found.code, found.fightID);
+    } catch (err) {
+      setDamageLoading(false);
+      setDamageError(err.message);
+    }
+  }
+
   function parseReportUrl(url) {
     // Formats possibles : .../reports/CODE#fight=12  ou  .../reports/CODE?fight=12
     const codeMatch = url.match(/reports\/([a-zA-Z0-9]+)/);
@@ -199,35 +252,7 @@ export default function Compare() {
       return;
     }
 
-    const leaderDungeon = leader?.overall?.dungeonScores?.find(
-      (d) => d.dungeon === selectedDungeon
-    );
-    if (!leaderDungeon?.report?.code) {
-      setDamageError("Le n°1 n'a pas de report exploitable pour ce donjon");
-      return;
-    }
-
-    setDamageLoading(true);
-    try {
-      const [mine, theirs] = await Promise.all([
-        fetch(
-          `/api/damage?code=${parsed.code}&fightID=${parsed.fightID}&name=${encodeURIComponent(character.name)}`
-        ).then((r) => r.json()),
-        fetch(
-          `/api/damage?code=${leaderDungeon.report.code}&fightID=${leaderDungeon.report.fightID}&name=${encodeURIComponent(leader.overall.name)}`
-        ).then((r) => r.json()),
-      ]);
-
-      if (mine.error) throw new Error(`Ton report : ${mine.error}`);
-      if (theirs.error) throw new Error(`Report du n°1 : ${theirs.error}`);
-
-      setMyDamage(mine);
-      setLeaderDamage(theirs);
-    } catch (err) {
-      setDamageError(err.message);
-    } finally {
-      setDamageLoading(false);
-    }
+    await runDamageAnalysis(parsed.code, parsed.fightID);
   }
 
   const classInfo = character ? CLASSES.find((c) => c.name === character.className) : null;
@@ -412,9 +437,14 @@ export default function Compare() {
           ) : (
             <>
               <p className="page-subtitle">
-                Colle le lien de TON report Warcraft Logs pour {selectedDungeon} (celui avec
-                #fight=XX dans l'URL) — on le compare au report du n°1 sur ce même donjon.
+                On peut essayer de retrouver automatiquement un de tes reports récents pour{" "}
+                {selectedDungeon}, ou tu peux coller un lien toi-même.
               </p>
+              <div className="search-form">
+                <button type="button" onClick={handleAutoDetect} disabled={damageLoading}>
+                  {damageLoading ? "Recherche…" : "Chercher automatiquement"}
+                </button>
+              </div>
               <form
                 className="search-form"
                 onSubmit={(e) => {
@@ -424,13 +454,12 @@ export default function Compare() {
               >
                 <input
                   type="text"
-                  placeholder="https://www.warcraftlogs.com/reports/XXXXXXXX#fight=9"
+                  placeholder="ou colle un lien : https://www.warcraftlogs.com/reports/XXXXXXXX#fight=9"
                   value={reportUrl}
                   onChange={(e) => setReportUrl(e.target.value)}
-                  required
                 />
                 <button type="submit" disabled={damageLoading}>
-                  {damageLoading ? "Analyse…" : "Analyser"}
+                  Analyser ce lien
                 </button>
               </form>
 
