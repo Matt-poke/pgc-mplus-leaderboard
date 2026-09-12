@@ -26,9 +26,16 @@ export default async function handler(req, res) {
       "https://us.api.blizzard.com/data/wow/talent-tree/index?namespace=static-us&locale=fr_FR",
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
-
     const treeData = await treeRes.json();
-    res.status(200).json(treeData);
+
+    // Test : l'arbre complet Mage (658) pour la spé Arcanes (62)
+    const specTreeRes = await fetch(
+      "https://us.api.blizzard.com/data/wow/talent-tree/658/playable-specialization/62?namespace=static-us&locale=fr_FR",
+      { headers: { Authorization: `Bearer ${access_token}` } }
+    );
+    const specTreeData = await specTreeRes.json();
+
+    res.status(200).json({ index: treeData, specTree: specTreeData });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
