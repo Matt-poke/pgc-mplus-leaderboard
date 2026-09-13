@@ -70,6 +70,22 @@ export async function getFullTalentTree(treeId, specId) {
 // Récupère l'icône (URL) de chaque sort demandé, en parallèle. Renvoie une
 // Map spellId -> url. Les échecs individuels sont ignorés (icône manquante
 // plutôt que de faire échouer tout l'arbre).
+// Stats calculées d'un objet précis, en tenant compte de ses bonus IDs
+// (upgrade track, etc.) — sans ça, Blizzard ne renvoie que les stats de
+// base de l'objet, pas celles réellement sur la pièce équipée.
+export async function getItemPreview(itemId, bonusIds) {
+  try {
+    const suffix = bonusIds?.length ? `&bonus_id=${bonusIds.join(":")}` : "";
+    const data = await bnetGet(`/data/wow/item/${itemId}?namespace=static-us&locale=fr_FR${suffix}`);
+    return {
+      stats: (data.preview_item?.stats || []).map((s) => s.display?.display_string).filter(Boolean),
+      setBonus: data.preview_item?.set?.display_string || null,
+    };
+  } catch {
+    return { stats: [], setBonus: null };
+  }
+}
+
 export async function getSpellIcons(spellIds) {
   const uniqueIds = [...new Set(spellIds)];
   const results = await Promise.all(

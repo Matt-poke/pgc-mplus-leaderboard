@@ -1,3 +1,5 @@
+import { getItemPreview } from "./_blizzard.js";
+
 // Récupère le stuff et les talents ACTUELS d'un personnage via Raider.IO —
 // contrairement aux données de classement Warcraft Logs, ça marche pour
 // n'importe quel joueur, pas seulement ceux du top mondial.
@@ -20,15 +22,22 @@ export default async function handler(req, res) {
 
     const data = await r.json();
 
-    const gearSlots = Object.entries(data.gear?.items || {}).map(([slot, item]) => ({
-      slot,
-      name: item.name,
-      icon: item.icon,
-      itemLevel: item.item_level,
-      quality: item.item_quality,
-      enchant: item.enchants_detail?.[0]?.name || null,
-      gems: (item.gems_detail || []).map((g) => g.name),
-    }));
+    const gearSlots = await Promise.all(
+      Object.entries(data.gear?.items || {}).map(async ([slot, item]) => {
+        const preview = await getItemPreview(item.item_id, item.bonuses);
+        return {
+          slot,
+          name: item.name,
+          icon: item.icon,
+          itemLevel: item.item_level,
+          quality: item.item_quality,
+          enchant: item.enchants_detail?.[0]?.name || null,
+          gems: (item.gems_detail || []).map((g) => g.name),
+          stats: preview.stats,
+          setBonus: preview.setBonus,
+        };
+      })
+    );
 
     // Les talents choisis : on ne garde que ceux qui ont un sort associé
     // (certains nœuds du loadout sont des connecteurs sans effet propre).
