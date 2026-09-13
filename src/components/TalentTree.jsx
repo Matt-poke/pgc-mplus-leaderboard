@@ -8,7 +8,7 @@ function pos(node) {
   return { x: node.col * STEP + CELL / 2, y: node.row * STEP + CELL / 2 };
 }
 
-function TreeSection({ title, nodes: rawNodes, selectedIds, choiceSpellByNode }) {
+function TreeSection({ title, nodes: rawNodes, selectedIds, choiceSpellByNode, showTooltip, hideTooltip }) {
   if (!rawNodes.length) return null;
 
   // Les coordonnées brutes de Blizzard ne démarrent pas forcément à 0
@@ -71,18 +71,25 @@ function TreeSection({ title, nodes: rawNodes, selectedIds, choiceSpellByNode })
           return (
             <div
               key={n.id}
-              className={`talent-node tooltip-wrapper ${selected ? "talent-node-selected" : "talent-node-dim"}`}
-              style={{ left: p.x - CELL / 2, top: p.y - CELL / 2, width: CELL, height: CELL }}
+              style={{ position: "absolute", left: p.x - CELL / 2, top: p.y - CELL / 2, width: CELL, height: CELL }}
+              onMouseEnter={(e) =>
+                showTooltip(
+                  e,
+                  <>
+                    <p className="tooltip-title">{label}</p>
+                    {n.isChoice && (
+                      <p className="tooltip-line tooltip-choice-note">
+                        Choix : {n.options.map((o) => o.name).join(" ou ")}
+                      </p>
+                    )}
+                    {description && <p className="tooltip-line">{description}</p>}
+                  </>
+                )
+              }
+              onMouseLeave={hideTooltip}
             >
-              {icon && <img src={icon} alt="" loading="lazy" />}
-              <div className="tooltip-box">
-                <p className="tooltip-title">{label}</p>
-                {n.isChoice && (
-                  <p className="tooltip-line tooltip-choice-note">
-                    Choix : {n.options.map((o) => o.name).join(" ou ")}
-                  </p>
-                )}
-                {description && <p className="tooltip-line">{description}</p>}
+              <div className={`talent-node ${selected ? "talent-node-selected" : "talent-node-dim"}`}>
+                {icon && <img src={icon} alt="" loading="lazy" />}
               </div>
             </div>
           );
@@ -95,17 +102,30 @@ function TreeSection({ title, nodes: rawNodes, selectedIds, choiceSpellByNode })
 export default function TalentTree({ spec, selectedTalents }) {
   const [tree, setTree] = useState(null);
   const [error, setError] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
+
+  function showTooltip(e, content) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({ content, x: rect.left + rect.width / 2, y: rect.top });
+  }
+  function hideTooltip() {
+    setTooltip(null);
+  }
 
   useEffect(() => {
     if (!spec) return;
     setTree(null);
     setError(null);
     fetch(`/api/talent-tree?spec=${spec}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Erreur ${res.status}`);
-        return res.json();
+      .then((res) => res.json().then((body) => ({ ok: res.ok, body })))
+      .then(({ ok, body }) => {
+        if (body.pending) {
+          setError("en cours de préparation, réessaie dans quelques minutes");
+          return;
+        }
+        if (!ok) throw new Error(body.error || "Erreur inconnue");
+        setTree(body);
       })
-      .then(setTree)
       .catch((err) => setError(err.message));
   }, [spec]);
 
@@ -132,6 +152,8 @@ export default function TalentTree({ spec, selectedTalents }) {
             nodes={heroTree.nodes}
             selectedIds={selectedIds}
             choiceSpellByNode={choiceSpellByNode}
+            showTooltip={showTooltip}
+            hideTooltip={hideTooltip}
           />
         </div>
       )}
@@ -141,14 +163,23 @@ export default function TalentTree({ spec, selectedTalents }) {
           nodes={tree.classNodes}
           selectedIds={selectedIds}
           choiceSpellByNode={choiceSpellByNode}
+          showTooltip={showTooltip}
+          hideTooltip={hideTooltip}
         />
         <TreeSection
           title="Talents de spécialisation"
           nodes={tree.specNodes}
           selectedIds={selectedIds}
           choiceSpellByNode={choiceSpellByNode}
+          showTooltip={showTooltip}
+          hideTooltip={hideTooltip}
         />
       </div>
+      {tooltip && (
+        <div className="floating-tooltip" style={{ left: tooltip.x, top: tooltip.y }}>
+          {tooltip.content}
+        </div>
+      )}
     </div>
   );
 }
