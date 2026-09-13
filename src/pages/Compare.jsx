@@ -90,14 +90,13 @@ function GearGrid({ gear, unavailableReason }) {
                   {item.name}
                 </p>
                 <p className="tooltip-line">Niveau d'objet {item.itemLevel}</p>
-                {item.stats.map((s) => (
-                  <p className="tooltip-line" key={s}>{s}</p>
+                {item.tooltipLines.map((l, i) => (
+                  <p className="tooltip-line" style={{ color: l.color }} key={i}>{l.text}</p>
                 ))}
                 {item.enchant && <p className="tooltip-line tooltip-enchant">{item.enchant}</p>}
                 {item.gems.map((g) => (
                   <p className="tooltip-line tooltip-enchant" key={g}>{g}</p>
                 ))}
-                {item.setBonus && <p className="tooltip-line tooltip-setbonus">{item.setBonus}</p>}
               </>
             )
           }

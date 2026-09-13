@@ -33,8 +33,7 @@ export default async function handler(req, res) {
           quality: item.item_quality,
           enchant: item.enchants_detail?.[0]?.name || null,
           gems: (item.gems_detail || []).map((g) => g.name),
-          stats: preview.stats,
-          setBonus: preview.setBonus,
+          tooltipLines: preview.lines,
         };
       })
     );
