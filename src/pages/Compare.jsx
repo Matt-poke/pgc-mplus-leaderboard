@@ -46,7 +46,7 @@ function realmSlug(displayName) {
 }
 
 function specSlug(className, spec) {
-  return `${className.toLowerCase()}-${spec.toLowerCase().replace(/\s+/g, "")}`;
+  return `${className.toLowerCase().replace(/\s+/g, "")}-${spec.toLowerCase().replace(/\s+/g, "")}`;
 }
 
 function useFloatingTooltip() {
