@@ -49,29 +49,61 @@ function specSlug(className, spec) {
   return `${className.toLowerCase()}-${spec.toLowerCase().replace(/\s+/g, "")}`;
 }
 
+function useFloatingTooltip() {
+  const [tooltip, setTooltip] = useState(null);
+
+  function show(e, content) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({ content, x: rect.left + rect.width / 2, y: rect.top });
+  }
+  function hide() {
+    setTooltip(null);
+  }
+
+  const node = tooltip && (
+    <div
+      className="floating-tooltip"
+      style={{ left: tooltip.x, top: tooltip.y }}
+    >
+      {tooltip.content}
+    </div>
+  );
+
+  return { show, hide, node };
+}
+
 function GearGrid({ gear, unavailableReason }) {
+  const { show, hide, node } = useFloatingTooltip();
   if (!gear) return <p className="leader-empty">{unavailableReason || "Indisponible"}</p>;
   return (
     <div className="icon-grid">
       {gear.gearSlots.map((item) => (
-        <div className="tooltip-wrapper" key={item.slot}>
-          <div
-            className="icon-tile"
-            style={{ "--quality-color": QUALITY_COLORS[item.quality] || QUALITY_COLORS[1] }}
-          >
-            <img src={iconUrl(item.icon)} alt={item.name} loading="lazy" />
-            <span className="icon-badge">{item.itemLevel}</span>
-          </div>
-          <div className="tooltip-box" style={{ "--tt-color": QUALITY_COLORS[item.quality] || QUALITY_COLORS[1] }}>
-            <p className="tooltip-title">{item.name}</p>
-            <p className="tooltip-line">Niveau d'objet {item.itemLevel}</p>
-            {item.enchant && <p className="tooltip-line tooltip-enchant">{item.enchant}</p>}
-            {item.gems.map((g) => (
-              <p className="tooltip-line tooltip-enchant" key={g}>{g}</p>
-            ))}
-          </div>
+        <div
+          className="icon-tile"
+          key={item.slot}
+          style={{ "--quality-color": QUALITY_COLORS[item.quality] || QUALITY_COLORS[1] }}
+          onMouseEnter={(e) =>
+            show(
+              e,
+              <>
+                <p className="tooltip-title" style={{ "--tt-color": QUALITY_COLORS[item.quality] }}>
+                  {item.name}
+                </p>
+                <p className="tooltip-line">Niveau d'objet {item.itemLevel}</p>
+                {item.enchant && <p className="tooltip-line tooltip-enchant">{item.enchant}</p>}
+                {item.gems.map((g) => (
+                  <p className="tooltip-line tooltip-enchant" key={g}>{g}</p>
+                ))}
+              </>
+            )
+          }
+          onMouseLeave={hide}
+        >
+          <img src={iconUrl(item.icon)} alt={item.name} loading="lazy" />
+          <span className="icon-badge">{item.itemLevel}</span>
         </div>
       ))}
+      {node}
     </div>
   );
 }
