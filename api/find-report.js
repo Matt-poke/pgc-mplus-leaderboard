@@ -1,4 +1,4 @@
-import { graphql } from "./_wcl.js";
+import { graphql } from "../lib/wcl.js";
 
 export default async function handler(req, res) {
   const { characterId, dungeon } = req.query;

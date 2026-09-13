@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { getFullTalentTree, getSpellIcons, collectSpellIds } from "./_blizzard.js";
-import { TALENT_TREE_IDS } from "./_talent_ids.js";
+import { getFullTalentTree, getSpellIcons, collectSpellIds } from "../lib/blizzard.js";
+import { TALENT_TREE_IDS } from "../lib/talent_ids.js";
 
 const ICONS_PER_CALL = 15; // petit lot, pour rester largement sous 10s
 const SPEC_SLUGS = Object.keys(TALENT_TREE_IDS);

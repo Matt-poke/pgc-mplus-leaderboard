@@ -1,4 +1,4 @@
-import { getItemPreview } from "./_blizzard.js";
+import { getItemPreview } from "../lib/blizzard.js";
 
 export default async function handler(req, res) {
   try {

@@ -1,4 +1,4 @@
-import { graphql, getClassNameById } from "./_wcl.js";
+import { graphql, getClassNameById } from "../lib/wcl.js";
 
 export default async function handler(req, res) {
   const { name, server, region } = req.query;

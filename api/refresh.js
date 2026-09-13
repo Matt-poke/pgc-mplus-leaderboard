@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import { SPECS } from "./_specs.js";
-import { getSeasonEncounters, computeSpecLeader } from "./_wcl.js";
+import { SPECS } from "../lib/specs.js";
+import { getSeasonEncounters, computeSpecLeader } from "../lib/wcl.js";
 
 // Combien de spécialisations on traite par appel. Avec 8 requêtes par spé,
 // UNE SEULE spé par appel reste confortablement sous la limite de 30s de

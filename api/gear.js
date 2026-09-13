@@ -1,4 +1,4 @@
-import { getItemPreview } from "./_blizzard.js";
+import { getItemPreview } from "../lib/blizzard.js";
 
 // Récupère le stuff et les talents ACTUELS d'un personnage via Raider.IO —
 // contrairement aux données de classement Warcraft Logs, ça marche pour
