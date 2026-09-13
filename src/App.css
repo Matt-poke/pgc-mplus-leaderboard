@@ -1,11 +1,14 @@
 :root {
-  --bg: #15121c;
-  --surface: #1e1a28;
-  --surface-hover: #262032;
-  --border: #322c40;
-  --text: #ede9f5;
-  --text-dim: #a79fc0;
-  --text-faint: #6f6785;
+  --bg: #171a24;
+  --surface: #1f2430;
+  --surface-hover: #272d3d;
+  --border: #343b4d;
+  --text: #eae6da;
+  --text-dim: #a5abbd;
+  --text-faint: #666c80;
+  --gold: #c9a962;
+  --gold-bright: #e8cd8a;
+  --gold-dim: #8a744a;
 }
 
 * {
@@ -14,7 +17,10 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(201, 169, 98, 0.05), transparent 60%),
+    radial-gradient(ellipse 900px 600px at 100% 0%, rgba(120, 140, 190, 0.05), transparent 55%),
+    var(--bg);
   color: var(--text);
   font-family: "Inter", sans-serif;
 }
@@ -22,7 +28,7 @@ body {
 .page {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 3rem 2rem 5rem;
+  padding: 2rem 2rem 5rem;
 }
 
 .page-header {
@@ -37,11 +43,12 @@ body {
 }
 
 .page-title {
-  font-family: "Fraunces", serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
-  font-size: 2rem;
+  font-size: 1.9rem;
   margin: 0;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
+  color: var(--gold-bright);
 }
 
 .page-subtitle {
@@ -63,11 +70,12 @@ body {
 }
 
 .class-name {
-  font-family: "Fraunces", serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   margin: 0 0 0.75rem;
   color: var(--class-color, var(--text));
+  letter-spacing: 0.01em;
 }
 
 .spec-list {
@@ -115,10 +123,21 @@ body {
   white-space: nowrap;
 }
 
+/* États "en cours de calcul", "indisponible", erreurs — un seul style
+   cohérent et soigné, réutilisé partout dans l'appli. */
 .leader-empty {
-  color: var(--text-faint);
-  font-style: italic;
-  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-dim);
+  font-style: normal;
+  font-size: 0.82rem;
+  background: rgba(201, 169, 98, 0.06);
+  border: 1px solid rgba(201, 169, 98, 0.18);
+  border-left: 2px solid var(--gold-dim);
+  border-radius: 4px;
+  padding: 0.45rem 0.7rem;
+  line-height: 1.4;
 }
 
 .region-badge {
@@ -135,7 +154,7 @@ body {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--class-color, var(--text));
+  color: var(--class-color, var(--gold-bright));
   min-width: 3.5rem;
   text-align: right;
 }
@@ -150,25 +169,51 @@ body {
   }
 }
 
+/* Navigation */
 .top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin: -2rem -2rem 2.5rem;
+  padding: 1rem 2rem;
+  background: rgba(23, 26, 36, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.top-nav-brand {
+  font-family: "Cinzel", serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.03em;
+  margin-right: 0.5rem;
+  white-space: nowrap;
+}
+
+.top-nav-links {
   display: flex;
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
 
 .top-nav a {
   color: var(--text-dim);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   padding-bottom: 0.35rem;
   border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .top-nav a.active,
 .top-nav a:hover {
-  color: var(--text);
-  border-bottom-color: var(--text);
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold);
 }
 
 .search-form {
@@ -195,24 +240,30 @@ body {
 }
 
 .search-form button {
-  background: var(--text);
-  color: var(--bg);
+  background: var(--gold);
+  color: #14161d;
   border: none;
   border-radius: 4px;
   padding: 0.6rem 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
   cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.search-form button:hover:not(:disabled) {
+  background: var(--gold-bright);
 }
 
 .search-form button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: default;
 }
 
 .compare-totals {
   display: flex;
   gap: 2rem;
+  flex-wrap: wrap;
   margin-bottom: 1rem;
 }
 
@@ -248,11 +299,14 @@ body {
 }
 
 .section-subtitle {
-  font-family: "Fraunces", serif;
+  font-family: "Cinzel", serif;
   font-weight: 600;
   font-size: 1rem;
-  margin: 1.75rem 0 0.75rem;
-  color: var(--text);
+  margin: 2rem 0 0.85rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  color: var(--gold-bright);
+  letter-spacing: 0.01em;
 }
 
 .damage-row {
@@ -303,10 +357,11 @@ body {
 
 .talent-tree-person {
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1rem;
+  border-radius: 8px;
+  padding: 1.25rem;
   margin-bottom: 1.5rem;
   overflow-x: auto;
+  background: linear-gradient(180deg, rgba(201, 169, 98, 0.03), transparent 40%);
 }
 
 .floating-tooltip {
@@ -316,7 +371,7 @@ body {
   width: max-content;
   max-width: 220px;
   background: #100e18;
-  border: 1px solid var(--tt-color, var(--class-color, #f5d76e));
+  border: 1px solid var(--tt-color, var(--gold));
   border-radius: 4px;
   padding: 0.5rem 0.65rem;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
@@ -328,7 +383,7 @@ body {
   margin: 0 0 0.25rem;
   font-weight: 700;
   font-size: 0.8rem;
-  color: var(--tt-color, var(--class-color, #f5d76e));
+  color: var(--tt-color, var(--gold-bright));
 }
 
 .tooltip-line {
@@ -387,7 +442,7 @@ body {
 }
 
 .talent-tree-svg .edge-active {
-  stroke: var(--class-color, #f5d76e);
+  stroke: var(--class-color, var(--gold));
   stroke-width: 2;
 }
 
@@ -413,8 +468,8 @@ body {
 
 .talent-node-selected {
   opacity: 1;
-  border-color: var(--class-color, #f5d76e);
-  box-shadow: 0 0 0 1px var(--class-color, #f5d76e);
+  border-color: var(--class-color, var(--gold));
+  box-shadow: 0 0 0 1px var(--class-color, var(--gold));
 }
 
 .icon-tile {
@@ -435,8 +490,8 @@ body {
 }
 
 .icon-tile-unique {
-  border-color: var(--class-color, #ff8000);
-  box-shadow: 0 0 0 1px var(--class-color, #ff8000);
+  border-color: var(--class-color, var(--gold));
+  box-shadow: 0 0 0 1px var(--class-color, var(--gold));
 }
 
 .icon-badge {
@@ -460,5 +515,13 @@ body {
   .compare-columns {
     grid-template-columns: 1fr;
     gap: 0.5rem;
+  }
+  .top-nav {
+    gap: 1rem;
+    margin: -1.25rem -1.25rem 2rem;
+    padding: 0.85rem 1.25rem;
+  }
+  .page {
+    padding: 1.25rem 1.25rem 4rem;
   }
 }

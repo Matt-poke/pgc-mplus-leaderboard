@@ -7,12 +7,15 @@ export default function App() {
   return (
     <div className="page">
       <nav className="top-nav">
-        <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
-          Accueil
-        </NavLink>
-        <NavLink to="/comparer" className={({ isActive }) => (isActive ? "active" : "")}>
-          Comparer mon personnage
-        </NavLink>
+        <span className="top-nav-brand">PGC</span>
+        <div className="top-nav-links">
+          <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
+            Accueil
+          </NavLink>
+          <NavLink to="/comparer" className={({ isActive }) => (isActive ? "active" : "")}>
+            Comparer mon personnage
+          </NavLink>
+        </div>
       </nav>
 
       <Routes>
