@@ -54,13 +54,14 @@ function GearGrid({ gear, unavailableReason }) {
   return (
     <div className="icon-grid">
       {gear.gearSlots.map((item) => (
-        <div
-          className="icon-tile tooltip-wrapper"
-          key={item.slot}
-          style={{ "--quality-color": QUALITY_COLORS[item.quality] || QUALITY_COLORS[1] }}
-        >
-          <img src={iconUrl(item.icon)} alt={item.name} loading="lazy" />
-          <span className="icon-badge">{item.itemLevel}</span>
+        <div className="tooltip-wrapper" key={item.slot}>
+          <div
+            className="icon-tile"
+            style={{ "--quality-color": QUALITY_COLORS[item.quality] || QUALITY_COLORS[1] }}
+          >
+            <img src={iconUrl(item.icon)} alt={item.name} loading="lazy" />
+            <span className="icon-badge">{item.itemLevel}</span>
+          </div>
           <div className="tooltip-box" style={{ "--tt-color": QUALITY_COLORS[item.quality] || QUALITY_COLORS[1] }}>
             <p className="tooltip-title">{item.name}</p>
             <p className="tooltip-line">Niveau d'objet {item.itemLevel}</p>
