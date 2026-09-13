@@ -274,7 +274,7 @@ export default function Compare() {
 
   const classInfo = character ? CLASSES.find((c) => c.name === character.className) : null;
   const specInfo = character
-    ? SPECS.find((s) => s.className === character.className && specSlug(character.className, character.mainSpec) === s.slug)
+    ? SPECS.find((s) => s.slug === specSlug(character.className, character.mainSpec))
     : null;
 
   const leaderScoreForSelection = leader?.overall
