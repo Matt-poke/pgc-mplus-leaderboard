@@ -7,7 +7,7 @@ export default function App() {
   return (
     <div className="page">
       <nav className="top-nav">
-        <span className="top-nav-brand">PGC</span>
+        <span className="top-nav-brand">M+ Opti</span>
         <div className="top-nav-links">
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Accueil
