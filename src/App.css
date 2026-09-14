@@ -507,6 +507,142 @@ body {
   border-top-left-radius: 3px;
 }
 
+.dungeon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.dungeon-card {
+  position: relative;
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  aspect-ratio: 16 / 10;
+}
+
+.dungeon-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.dungeon-card:hover img {
+  transform: scale(1.04);
+}
+
+.dungeon-card-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.6rem 0.8rem;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.85), transparent);
+  color: var(--gold-bright);
+  font-family: "Cinzel", serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.dungeon-screenshot {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+
+.dungeon-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.dungeon-action-btn {
+  background: var(--surface);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold-bright);
+  border-radius: 4px;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.dungeon-action-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.dungeon-action-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.dungeon-bl-note {
+  display: block;
+  margin-bottom: 1.5rem;
+}
+
+.pull-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  align-items: flex-start;
+}
+
+.pull-row:first-child {
+  border-top: none;
+}
+
+.pull-number {
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  color: var(--gold-bright);
+  min-width: 1.5rem;
+}
+
+.pull-mobs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.pull-mob {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  border-left: 2px solid var(--priority-color, var(--border));
+  padding-left: 0.6rem;
+}
+
+.pull-mob-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.pull-mob-tag {
+  font-size: 0.68rem;
+  color: var(--priority-color, var(--text-faint));
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pull-mob-note {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
 @media (max-width: 560px) {
   .damage-row {
     grid-template-columns: 1fr 1fr 1fr;
