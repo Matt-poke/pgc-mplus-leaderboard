@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getFullTalentTree, getSpellIcons, collectSpellIds } from "../lib/blizzard.js";
 import { TALENT_TREE_IDS } from "../lib/talent_ids.js";
 
-const ICONS_PER_CALL = 15; // petit lot, pour rester largement sous 10s
+const ICONS_PER_CALL = 50; // récupérées en parallèle, donc ça reste rapide malgré le nombre
 const SPEC_SLUGS = Object.keys(TALENT_TREE_IDS);
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
